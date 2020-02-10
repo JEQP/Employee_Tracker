@@ -1,0 +1,23 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "Employee CMS",
+  "main": "employeetrackercode.js",
+  "scripts": {
+    "test": "NULL"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JEQP/Employee_Tracker.git"
+  },
+  "keywords": [
+    "mysql",
+    "javascript"
+  ],
+  "author": "James Pearce",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JEQP/Employee_Tracker/issues"
+  },
+  "homepage": "https://github.com/JEQP/Employee_Tracker#readme"
+}
