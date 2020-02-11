@@ -24,6 +24,7 @@ connection.connect(function (err) {
 // inq add, view
 
 var roleArray = [];
+var tempRoleArray = [];
 var deptArray = [];
 var tempDeptArray = [];
 
@@ -73,9 +74,9 @@ function addEntry() {
     }).then(answer => {
         switch (answer.addChoice) {
             case "employee":
-                var query = "SELECT title FROM role";
+                var query = "SELECT id, title FROM role";
                 connection.query(query, function (err, res) {
-                    var tempRoleArray = [];
+                    // var tempRoleArray = [];
                     for (var i = 0; i < res.length; i++) {
                         tempRoleArray.push(res[i]);
                         // creates and array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
@@ -84,6 +85,14 @@ function addEntry() {
                     // converts to an array of strings
                     roleArray = tempRoleArray.map(role => role.title);
                 });
+
+                query = "SELECT id, dept_name FROM department";
+                connection.query(query, function (err, res) {
+                    // tempDeptArray = [];
+                    res.forEach(element => tempDeptArray.push(element));
+                    console.log(tempDeptArray);
+                    deptArray = tempDeptArray.map(department => department.dept_name);
+                    console.log(deptArray);
                 addEmployee();
                 break;
 
@@ -107,6 +116,10 @@ function addEntry() {
                     // startPage();
                     addRole();
                 });
+
+            case "department":
+                addDepartment();
+
         }
     });
 
@@ -121,36 +134,60 @@ function addEntry() {
 // // ==> employee, inq first name, surname, role id, manager id
 
 
-// function addEmployee() {
+function addEmployee() {
+inq.prompt([{
+    {
+        type: "input",
+        name: "first_name",
+        message: "What is the employee's first name?"
+        // validate: validateName
+    }, {
+        type: "input",
+        name: "last_name",
+        message: "What is the employee's surname?",
+        // validate: validateSalary
+    }, 
+    {
+        type: "rawlist",
+        name: "role_id",
+        message: "In which role will the employee work?",
+        choices: roleArray
+    },
+    {
 
-//     employeeQuestions().then(answers => {
-//         const manager = new Manager(answers.name1, answers.id1, answers.email1, answers.officeNumber);
-//         var query = connection.query(
-//             "INSERT INTO employee SET ?",
-//             {
-//                 first_name:
-//                     last_name:
-//                 role_id:
-//                     manager_id:
-//             }
-//         )
-//     });
-// }
-//         teamMembers.push(manager);;
-//         var query = connection.query(
-//             "INSERT INTO products SET ?",
-//             {
-//               flavor: "Rocky Road", // key names correspond to column names, and values are what is being inserted into the column 
-//               price: 3.0,
-//               quantity: 50
-//             },
-//             function(err, res) {
-//               if (err) throw err;
-//               console.log(res.affectedRows + " product inserted!\n");
-//               // Call updateProduct AFTER the INSERT completes
-//               updateProduct();
+        type: "rawlist",
+        name: "departmentID",
+        message: "In which department will the role operate?",
+        choices: deptArray
+}]).then(answers => {
+    tempRoleArray.forEach(element => {
+        if (answers.role_id === element.title) {
+            const roleID = element.id;
+            tempDeptArray.forEach(element => {
+                console.log("element: " + element);
+                // if (answers.departmentID === element.dept_name) {  it's manager, we need to work out the code for finding manager ID
+                //     const deptID = element.id;
+                //     console.log("deptID: " + deptID);
+                    let query = connection.query(
+                        "INSERT INTO employee SET ?",
+                        {
+                            first_name: answers.title,
+                            last_name: answers.salary,
+                            role_id:
+                            manager_id:
+                        },
+                        function (err, res) {
+                            if (err) throw err;
 
-// }
+                            console.log("Role added");
+                            startPage();
+                        }
+                    );
+                }
+            })
+        }
+    })
+})
 
 // // ==> role, inq title, salary, department
 
@@ -200,6 +237,28 @@ function addRole() {
 }
 
 // // ==> department, inq dept name
+
+function addDepartment() {
+    inq.prompt([{
+        type: "input",
+        name: "dept_name",
+        message: "What is the name of the department?"
+    }]).then(answers => {
+
+        let query = connection.query(
+            "INSERT INTO department SET ?",
+            {
+                dept_name: answers.dept_name
+            },
+            function (err, res) {
+                if (err) throw err;
+
+                console.log("Department added");
+                startPage();
+            }
+        )
+    })
+}
 
 // // view entry
 // // inq employee, role, department
