@@ -23,92 +23,181 @@ connection.connect(function (err) {
 // offer intial screen
 // inq add, view
 
-const roleArray = [];
-const deptArray = [];
+var roleArray = [];
+var deptArray = [];
+var tempDeptArray = [];
 
 
 function startPage() {
     // initiate question arrays
-    var query = "SELECT title FROM role";
-    connection.query(query, function(err, res) {
-        for (var i = 0; i < res.length; i++) {
-            roleArray.push(res[i]);
-            // creates and array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
-    }
 
+    inq.prompt({
+        name: "choice",
+        type: "rawlist",
+        message: "Welcome to the employee database CMS. What would you like to do?",
+        choices: [
+            "Add a new entry",
+            "View a current entry"
+        ]
+    }).then(answer => {
+        switch (answer.choice) {
+            case "Add a new entry":
+                addEntry();
+                break;
 
+            case "View a current entry":
+                viewEntry();
+                break;
+        }
 
-    // inq.prompt({
-    //     name: "choice",
-    //     type: "rawlist",
-    //     message: "Welcome to the employee database CMS. What would you like to do?",
-    //     choices: [
-    //         "Add a new entry",
-    //         "View a current entry"
-    //     ]
-    // }).then(answer => {
-    //     switch (answer.choice) {
-    //         case "Add a new entry":
-    //             addEntry();
-    //             break;
+    });
 
-    //         case "View a current entry":
-    //             viewEntry();
-    //             break;
-    //     }
-
-    // });
-});
 }
 
 
 
-// // add entry
-// // inq employee, role, department
+// add entry
+// inq employee, role, department
 
-// function addEntry() {
-//     inq.prompt({
-//         name: "addChoice",
-//         type: "rawlist",
-//         message: "What would you like to add?",
-//         choices: [
-//             "employee",
-//             "role",
-//             "department"
-//         ]
-//         // switch cases to draw in questions, then answers are pushed to DB rather than array. INSERT command.
-//     }).then(answer => {
-//         switch (answer.addChoice) {
-//             case "employee":
-//                 employeeQuestions();
-//                 break;
+function addEntry() {
+    inq.prompt({
+        name: "addChoice",
+        type: "rawlist",
+        message: "What would you like to add?",
+        choices: [
+            "employee",
+            "role",
+            "department"
+        ]
+        // switch cases to draw in questions, then answers are pushed to DB rather than array. INSERT command.
+    }).then(answer => {
+        switch (answer.addChoice) {
+            case "employee":
+                var query = "SELECT title FROM role";
+                connection.query(query, function (err, res) {
+                    var tempRoleArray = [];
+                    for (var i = 0; i < res.length; i++) {
+                        tempRoleArray.push(res[i]);
+                        // creates and array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
+                    }
 
-//             case "role":
-//                 console.log("query to start");
-//                 var query = "SELECT id, dept_name FROM department";
-//                 console.log("Query conducted");
-//                 connection.query(query, function(err, res) {
-//                     for (var i = 0; i < res.length; i++) {
-//                       console.log(res[i].id + " -- " + res[i].dept_name);
-//                     }
-//                 });
-//                 inq.prompt(roleQuestions).then(answers => {
-//                     const manager = new Manager(answers.name1, answers.id1, answers.email1, answers.officeNumber);
-//                     teamMembers.push(manager);
-//                 roleQuestions();
-//                 break;
+                    // converts to an array of strings
+                    roleArray = tempRoleArray.map(role => role.title);
+                });
+                addEmployee();
+                break;
 
-//             case "department":
-//                 departmentQuestions;
-//                 break;
-//         }
+            case "role":
+                // console.log("query to start");
+                // var query = "SELECT id, dept_name FROM department";
+                // console.log("Query conducted");
+                // connection.query(query, function (err, res) {
+                //     for (var i = 0; i < res.length; i++) {
+                //         console.log(res[i].id + " -- " + res[i].dept_name);
+                //     }
+                // });
 
-//     });
-// }
+                query = "SELECT id, dept_name FROM department";
+                connection.query(query, function (err, res) {
+                    // tempDeptArray = [];
+                    res.forEach(element => tempDeptArray.push(element));
+                    console.log(tempDeptArray);
+                    deptArray = tempDeptArray.map(department => department.dept_name);
+                    console.log(deptArray);
+                    // startPage();
+                    addRole();
+                });
+        }
+    });
+
+
+    //             case "department":
+    // departmentQuestions;
+    // break;
+}
+
+
 
 // // ==> employee, inq first name, surname, role id, manager id
 
+
+// function addEmployee() {
+
+//     employeeQuestions().then(answers => {
+//         const manager = new Manager(answers.name1, answers.id1, answers.email1, answers.officeNumber);
+//         var query = connection.query(
+//             "INSERT INTO employee SET ?",
+//             {
+//                 first_name:
+//                     last_name:
+//                 role_id:
+//                     manager_id:
+//             }
+//         )
+//     });
+// }
+//         teamMembers.push(manager);;
+//         var query = connection.query(
+//             "INSERT INTO products SET ?",
+//             {
+//               flavor: "Rocky Road", // key names correspond to column names, and values are what is being inserted into the column 
+//               price: 3.0,
+//               quantity: 50
+//             },
+//             function(err, res) {
+//               if (err) throw err;
+//               console.log(res.affectedRows + " product inserted!\n");
+//               // Call updateProduct AFTER the INSERT completes
+//               updateProduct();
+
+// }
+
 // // ==> role, inq title, salary, department
+
+function addRole() {
+    console.log("deptArray in addRole: " + deptArray);
+    inq.prompt([
+        {
+            type: "input",
+            name: "title",
+            message: "What is the title of the role?"
+            // validate: validateName
+        }, {
+            type: "number",
+            name: "salary",
+            message: "What is the salary?",
+            // validate: validateSalary
+        }, {
+
+            type: "rawlist",
+            name: "departmentID",
+            message: "In which department will the role operate?",
+            choices: deptArray
+        }]).then(answers => {
+            console.log("tempDeptArray: " + JSON.stringify(tempDeptArray));
+            tempDeptArray.forEach(element => {
+                console.log("element: " + element);
+                if (answers.departmentID === element.dept_name) {
+                    const deptID = element.id;
+                    console.log("deptID: " + deptID);
+                    let query = connection.query(
+                        "INSERT INTO role SET ?",
+                        {
+                            title: answers.title,
+                            salary: answers.salary,
+                            department_id: deptID
+                        },
+                        function (err, res) {
+                            if (err) throw err;
+
+                            console.log("Role added");
+                            startPage();
+                        }
+                    );
+                }
+            })
+        });
+}
 
 // // ==> department, inq dept name
 
@@ -126,31 +215,25 @@ function startPage() {
 //     // validate: validateName
 // }]
 
-// const roleQuestions = [{
-//     type: "input",
-//     name: "title",
-//     message: "What is the title of the role?"
-//     // validate: validateName
-// }, {
-//     type: "number",
-//     name: "salary",
-//     message: "What is the salary?",
-//     // validate: validateSalary
-// }, {
-    
-//     // type: "rawlist",
-//     // name: "departmentID",
-//     // message: "In which department will the role operate?",
-//     // choices: 
-//     // While a list is the best way to ask this question (since it is a foregin key), 
-//     // if a new department is added it would require recoding to add it to the list. 
-//     // type: "input",
-//     // name: "departmentID",
-//     // message: "In which department will the role operate?"
-//     validate: validateName 
-//     // this way also sucks. the name will have to be converted to lowercase and match exactly. Bum.
-//     //filter: (Function) Receive the user input and return the filtered value to be used inside the program. The value returned will be added to the Answers hash.
-// }]
+
+// const roleQuestions = [
+//     {
+//         type: "input",
+//         name: "title",
+//         message: "What is the title of the role?"
+//         // validate: validateName
+//     }, {
+//         type: "number",
+//         name: "salary",
+//         message: "What is the salary?",
+//         // validate: validateSalary
+//     }, {
+
+//         type: "rawlist",
+//         name: "departmentID",
+//         message: "In which department will the role operate?",
+//         choices: deptArray
+//     }]
 
 // const employeeQuestions = [{
 //     type: "input",
