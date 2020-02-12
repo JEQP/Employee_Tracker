@@ -25,8 +25,13 @@ connection.connect(function (err) {
 
 var roleArray = [];
 var tempRoleArray = [];
+var roleID = 0;
 var deptArray = [];
 var tempDeptArray = [];
+var managerArray = [];
+var managerNameArray = [];
+var managerID = 0;
+
 
 
 function startPage() {
@@ -72,6 +77,7 @@ function addEntry() {
         ]
         // switch cases to draw in questions, then answers are pushed to DB rather than array. INSERT command.
     }).then(answer => {
+        console.log("You chose: " + JSON.stringify(answer));
         switch (answer.addChoice) {
             case "employee":
                 var query = "SELECT id, title FROM role";
@@ -90,12 +96,13 @@ function addEntry() {
                 connection.query(query, function (err, res) {
                     // tempDeptArray = [];
                     res.forEach(element => tempDeptArray.push(element));
-                    console.log(tempDeptArray);
+                    // console.log(tempDeptArray);
                     deptArray = tempDeptArray.map(department => department.dept_name);
-                    console.log(deptArray);
-                addEmployee();
-                break;
+                    // console.log(deptArray);
+                    addEmployee();
 
+                });
+                break;
             case "role":
                 // console.log("query to start");
                 // var query = "SELECT id, dept_name FROM department";
@@ -116,7 +123,7 @@ function addEntry() {
                     // startPage();
                     addRole();
                 });
-
+                break;
             case "department":
                 addDepartment();
 
@@ -135,46 +142,79 @@ function addEntry() {
 
 
 function addEmployee() {
-inq.prompt([{
-    {
-        type: "input",
-        name: "first_name",
-        message: "What is the employee's first name?"
-        // validate: validateName
-    }, {
-        type: "input",
-        name: "last_name",
-        message: "What is the employee's surname?",
-        // validate: validateSalary
-    }, 
-    {
-        type: "rawlist",
-        name: "role_id",
-        message: "In which role will the employee work?",
-        choices: roleArray
-    },
-    {
+    // Fill manager array. All managers have as their manager Douglas Reynholm, Head Manager
 
-        type: "rawlist",
-        name: "departmentID",
-        message: "In which department will the role operate?",
-        choices: deptArray
-}]).then(answers => {
-    tempRoleArray.forEach(element => {
-        if (answers.role_id === element.title) {
-            const roleID = element.id;
-            tempDeptArray.forEach(element => {
-                console.log("element: " + element);
-                // if (answers.departmentID === element.dept_name) {  it's manager, we need to work out the code for finding manager ID
-                //     const deptID = element.id;
-                //     console.log("deptID: " + deptID);
+    managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
+    let query = connection.query(
+        "SELECT id, first_name, last_name FROM employee WHERE ?",
+        {
+            manager_id: 1
+        },
+        function (err, res) {
+            res.forEach(element => managerArray.push(element));
+            // console.log("managerArray:" + JSON.stringify(managerArray));
+
+            for (i = 0; i < managerArray.length; i++) {
+                let name = managerArray[i].first_name + " " + managerArray[i].last_name;
+                // console.log(name);
+                managerNameArray.push(name);
+
+            }
+
+            // console.log("names: " + JSON.stringify(managerNameArray));
+        });
+
+    inq.prompt([
+        {
+            type: "input",
+            name: "first_name",
+            message: "What is the employee's first name?"
+            // validate: validateName
+        }, {
+            type: "input",
+            name: "last_name",
+            message: "What is the employee's surname?",
+            // validate: validateSalary
+        },
+        {
+            type: "rawlist",
+            name: "role_id",
+            message: "In which role will the employee work?",
+            choices: roleArray
+        },
+        {
+
+            type: "rawlist",
+            name: "managerID",
+            message: "To whom will this employee report?",
+            choices: managerNameArray
+        }]).then(answers => {
+            tempRoleArray.forEach(element => {
+                if (answers.role_id === element.title) {
+                    roleID = element.id;
+
+                    for (var i = 0; i < managerNameArray.length; i++) {
+                        if (answers.managerID === managerNameArray[i]) {
+                            managerID = managerArray[i].id;
+                        }
+                    }
+                    // managerNameArray.forEach(element => {
+                    //     // console.log("element: " + element);
+                    //     if (answers.managerID === element) {
+                    //         var index = managerNameArray.indexOf(element);
+                    //         managerID = managerArray[index].id;
+
+                    //     }
+                    // if (answers.departmentID === element.dept_name) {  it's manager, we need to work out the code for finding manager ID
+                    //     const deptID = element.id;
+                    //     console.log("deptID: " + deptID);
                     let query = connection.query(
                         "INSERT INTO employee SET ?",
                         {
-                            first_name: answers.title,
-                            last_name: answers.salary,
-                            role_id:
-                            manager_id:
+                            first_name: answers.first_name,
+                            last_name: answers.last_name,
+                            role_id: roleID,
+                            manager_id: managerID
                         },
                         function (err, res) {
                             if (err) throw err;
@@ -185,10 +225,8 @@ inq.prompt([{
                     );
                 }
             })
-        }
-    })
-})
-
+        })
+}
 // // ==> role, inq title, salary, department
 
 function addRole() {
