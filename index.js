@@ -450,11 +450,60 @@ function viewRole() {
         )
     }
 
-
-
 }
 
 
+function viewDepartment() {
+    var deptTable = [];
+    var tempDeptTable = [];
+    var roleNum = [];
+
+    let query = connection.query(
+        "SELECT department.id, dept_name FROM department",
+
+        function (err, res) {
+            if (err) throw err;
+            res.forEach(element => deptTable.push(element));
+            tempDeptTable = deptTable.map(function (d) {
+                return {
+                    ID: d.id,
+                    Department: d.dept_name,
+                    Num_Employed: 0
+                }
+            });
+            numEmpsD();
+        }
+    )
+
+
+    function numEmpsD() {
+        let query = connection.query(
+            "SELECT employee.id, role_id, department_id FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON department.id = role.department_id",
+            // "SELECT role_id, department_id FROM employee INNER JOIN role ON employee.role_id = role.id",
+            function (err, res) {
+                if (err) throw err;
+                res.forEach(element => roleNum.push(element));
+
+                for (var i = 0; i < roleNum.length; i++) {
+                    var r = roleNum[i].department_id;
+
+                    for (var j = 0; j < tempDeptTable.length; j++) {
+                        if (r === tempDeptTable[j].ID) {
+                            let tv = tempDeptTable[j].Num_Employed;
+                            tv++;
+                            tempDeptTable[j].Num_Employed = tv;
+                        }
+
+                    }
+                }
+                console.table(tempDeptTable);
+                startPage();
+            }
+
+        )
+        
+    }
+}
 // connection.query(query, function (err, res) {
 //     // tempDeptArray = [];
 //     res.forEach(element => tempDeptArray.push(element));
