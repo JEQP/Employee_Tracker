@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/JEQP/Employee_Tracker#readme",
   "dependencies": {
+    "console.table": "^0.10.0",
     "inquirer": "^7.0.4",
     "mysql": "^2.18.1"
   }

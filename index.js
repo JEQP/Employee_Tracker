@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inq = require("inquirer");
+const cTable = require('console.table');
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -85,23 +86,26 @@ function addEntry() {
                     // var tempRoleArray = [];
                     for (var i = 0; i < res.length; i++) {
                         tempRoleArray.push(res[i]);
-                        // creates and array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
+                        // creates an array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
                     }
 
                     // converts to an array of strings
+                    
                     roleArray = tempRoleArray.map(role => role.title);
-                });
-
-                query = "SELECT id, dept_name FROM department";
-                connection.query(query, function (err, res) {
-                    // tempDeptArray = [];
-                    res.forEach(element => tempDeptArray.push(element));
-                    // console.log(tempDeptArray);
-                    deptArray = tempDeptArray.map(department => department.dept_name);
-                    // console.log(deptArray);
+                    console.log(roleArray);
                     addEmployee();
-
                 });
+
+                // query = "SELECT id, dept_name FROM department";
+                // connection.query(query, function (err, res) {
+                //     // tempDeptArray = [];
+                //     res.forEach(element => tempDeptArray.push(element));
+                //     // console.log(tempDeptArray);
+                //     deptArray = tempDeptArray.map(department => department.dept_name);
+                //     // console.log(deptArray);
+               
+
+                // });
                 break;
             case "role":
                 // console.log("query to start");
@@ -180,6 +184,7 @@ function addEmployee() {
             type: "rawlist",
             name: "role_id",
             message: "In which role will the employee work?",
+            pageSize: roleArray.length, // otherwise the default is 6 for choices list
             choices: roleArray
         },
         {
@@ -187,6 +192,7 @@ function addEmployee() {
             type: "rawlist",
             name: "managerID",
             message: "To whom will this employee report?",
+            pageSize: managerNameArray.length,
             choices: managerNameArray
         }]).then(answers => {
             tempRoleArray.forEach(element => {
@@ -247,6 +253,7 @@ function addRole() {
             type: "rawlist",
             name: "departmentID",
             message: "In which department will the role operate?",
+            pageSize: deptArray.length,
             choices: deptArray
         }]).then(answers => {
             console.log("tempDeptArray: " + JSON.stringify(tempDeptArray));
@@ -301,6 +308,128 @@ function addDepartment() {
 // // view entry
 // // inq employee, role, department
 
+function viewEntry() {
+
+    inq.prompt({
+        name: "choice",
+        type: "rawlist",
+        message: "Which type of entry would you like to view?",
+        choices: [
+            "employee",
+            "role",
+            "department"
+        ]
+    }).then(answer => {
+        switch (answer.choice) {
+            case "employee":
+                viewEmployee();
+                break;
+
+            case "role":
+                viewRole();
+                break;
+
+            case "department":
+                viewDepartment();
+        }
+
+    });
+}
+
+
+function viewEmployee() {
+    var employeeTable = [];
+    var tempEmployeeTable = [];
+    let query = connection.query(
+        "SELECT employee.id, first_name, last_name, manager_id, title, salary, dept_name FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON department.id = role.department_id",
+
+        function (err, res) {
+            if (err) throw err;
+            // console.log(res);
+            res.forEach(element => employeeTable.push(element));
+            tempEmployeeTable = employeeTable.map(function (d) {
+                return {
+                    ID: d.id,
+                    FirstName: d.first_name,
+                    Surname: d.last_name,
+                    Manager: d.manager_id,
+                    Title: d.title,
+                    Salary: d.salary,
+                    Department: d.dept_name
+                }
+            });
+            // test initial table is created
+            // console.table(employeeTable);
+            
+            // test we can get id from initial table
+            // for (var i = 0; i < employeeTable.length; i++) {
+            //     console.log(employeeTable[i].id);
+            // }
+
+            // test second table has different headlines
+            // console.table(tempEmployeeTable);
+
+            // try to change manager  column
+
+            for (var j = 0; j < tempEmployeeTable.length; j++) {
+                let manID = tempEmployeeTable[j].Manager;
+                let maname = "";
+                if (tempEmployeeTable[j].Manager === null) {
+                    tempEmployeeTable[j].Manager = "none";
+                }
+                else {
+                    for (var k = 0; k < tempEmployeeTable.length; k++) {
+                        // console.log("manID: " + manID + " -- tempEmployeeTable.ID: " + tempEmployeeTable[k].ID);
+                        if (manID === tempEmployeeTable[k].ID) {
+                            
+                            maname = tempEmployeeTable[k].FirstName + " " + tempEmployeeTable[k].Surname;
+                            // console.log("maname: " + maname);
+                            
+                        }
+                    }
+                    tempEmployeeTable[j].Manager = maname;
+                }
+            }
+            console.table(tempEmployeeTable);
+           startPage();
+
+        }
+    )
+
+}
+
+viewRole() {
+    var roleTable = [];
+    let query = connection.query(
+        "SELECT id, title, salary, dept_name FROM role INNER JOIN department ON department.id = role.department_id",
+
+        function (err, res) {
+            if (err) throw err;
+            // console.log(res);
+            res.forEach(element => roleTable.push(element));
+            tempEmployeeTable = employeeTable.map(function (d) {
+                return {
+                    ID: d.id,
+                    FirstName: d.first_name,
+                    Surname: d.last_name,
+                    Manager: d.manager_id,
+                    Title: d.title,
+                    Salary: d.salary,
+                    Department: d.dept_name
+                }
+            });
+}
+
+
+// connection.query(query, function (err, res) {
+//     // tempDeptArray = [];
+//     res.forEach(element => tempDeptArray.push(element));
+//     // console.log(tempDeptArray);
+//     deptArray = tempDeptArray.map(department => department.dept_name);
+//     // console.log(deptArray);
+//     addEmployee();
+
+// });
 // // ==> print entry, inq update, delete, search for other
 
 // // --==-- INQUIRER QUESTIONS FOR DATA ENTRY --==-- //
@@ -312,54 +441,6 @@ function addDepartment() {
 //     // validate: validateName
 // }]
 
-
-// const roleQuestions = [
-//     {
-//         type: "input",
-//         name: "title",
-//         message: "What is the title of the role?"
-//         // validate: validateName
-//     }, {
-//         type: "number",
-//         name: "salary",
-//         message: "What is the salary?",
-//         // validate: validateSalary
-//     }, {
-
-//         type: "rawlist",
-//         name: "departmentID",
-//         message: "In which department will the role operate?",
-//         choices: deptArray
-//     }]
-
-// const employeeQuestions = [{
-//     type: "input",
-//     name: "firstName",
-//     message: "What is the first name of the employee?"
-//     // validate: validateName
-// }, {
-//     type: "input",
-//     name: "surname",
-//     message: "What is the surname of the employee?"
-//     // validate: validateName
-// }, {
-//     // role
-// }, {
-//     // manager
-// }]
-
-// // how do I pass the parameter when it has different names?
-// function validateName(name) {
-//     const inputName = name;
-//     const nameRegex = /^(?=.*?[a-zA-Z\s])[a-zA-Z\s]+$/
-//     const nameResult = nameRegex.test(inputName);
-//     if (nameResult) {
-//         return true;
-//     }
-//     else {
-//         console.log("Names require letters.");
-//     }
-// }
 
 // function validateSalary(salary) {
 //     // find how to check max digits, and no more than two digits after decimal point.
