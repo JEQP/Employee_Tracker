@@ -90,7 +90,7 @@ function addEntry() {
                     }
 
                     // converts to an array of strings
-                    
+
                     roleArray = tempRoleArray.map(role => role.title);
                     console.log(roleArray);
                     addEmployee();
@@ -103,7 +103,7 @@ function addEntry() {
                 //     // console.log(tempDeptArray);
                 //     deptArray = tempDeptArray.map(department => department.dept_name);
                 //     // console.log(deptArray);
-               
+
 
                 // });
                 break;
@@ -360,7 +360,7 @@ function viewEmployee() {
             });
             // test initial table is created
             // console.table(employeeTable);
-            
+
             // test we can get id from initial table
             // for (var i = 0; i < employeeTable.length; i++) {
             //     console.log(employeeTable[i].id);
@@ -381,43 +381,77 @@ function viewEmployee() {
                     for (var k = 0; k < tempEmployeeTable.length; k++) {
                         // console.log("manID: " + manID + " -- tempEmployeeTable.ID: " + tempEmployeeTable[k].ID);
                         if (manID === tempEmployeeTable[k].ID) {
-                            
+
                             maname = tempEmployeeTable[k].FirstName + " " + tempEmployeeTable[k].Surname;
                             // console.log("maname: " + maname);
-                            
+
                         }
                     }
                     tempEmployeeTable[j].Manager = maname;
                 }
             }
             console.table(tempEmployeeTable);
-           startPage();
+            startPage();
 
         }
     )
 
 }
 
-viewRole() {
+// Displays a table of role information 
+function viewRole() {
     var roleTable = [];
+    var tempRoleTable = [];
+    var roleNum = [];
     let query = connection.query(
-        "SELECT id, title, salary, dept_name FROM role INNER JOIN department ON department.id = role.department_id",
+        "SELECT role.id, title, salary, dept_name FROM role INNER JOIN department ON department.id = role.department_id",
 
         function (err, res) {
             if (err) throw err;
-            // console.log(res);
             res.forEach(element => roleTable.push(element));
-            tempEmployeeTable = employeeTable.map(function (d) {
+            tempRoleTable = roleTable.map(function (d) {
                 return {
                     ID: d.id,
-                    FirstName: d.first_name,
-                    Surname: d.last_name,
-                    Manager: d.manager_id,
                     Title: d.title,
                     Salary: d.salary,
-                    Department: d.dept_name
+                    Department: d.dept_name,
+                    Num_Employed: 0
                 }
             });
+            numEmps();
+        },
+
+    )
+// Adds the total number of people employed in a role into the Num_Employed column of the table 
+    function numEmps() {
+        let query = connection.query(
+            "SELECT role_id FROM employee",
+            function (err, res) {
+                if (err) throw err;
+                res.forEach(element => roleNum.push(element));
+                for (var i = 0; i < roleNum.length; i++) {
+                    var r = roleNum[i].role_id;
+
+                    for (var j = 0; j < tempRoleTable.length; j++) {
+                        if (r === tempRoleTable[j].ID) {
+                            let tv = tempRoleTable[j].Num_Employed;
+                            tv++;
+                            tempRoleTable[j].Num_Employed = tv;
+                        }
+
+                    }
+                }
+                console.table(tempRoleTable);
+                startPage();
+            }
+
+
+
+        )
+    }
+
+
+
 }
 
 
