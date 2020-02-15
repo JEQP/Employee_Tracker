@@ -71,7 +71,7 @@ function startPage() {
             managerNameArray = [];
             managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
             res.forEach(element => managerArray.push(element));
-             for (i = 0; i < managerArray.length; i++) {
+            for (i = 0; i < managerArray.length; i++) {
                 let name = managerArray[i].first_name + " " + managerArray[i].last_name;
                 managerNameArray.push(name);
             }
@@ -297,6 +297,7 @@ function viewEntry() {
             "employee",
             "role",
             "department",
+            "manager",
             "return to start"
         ]
     }).then(answer => {
@@ -313,8 +314,12 @@ function viewEntry() {
                 viewDepartment();
                 break;
 
-                case "return to start":
-                    startPage();
+            case "manager":
+                viewManager();
+                break;
+
+            case "return to start":
+                startPage();
         }
 
     });
@@ -481,6 +486,37 @@ function viewDepartment() {
     }
 }
 
+function viewManager() {
+    console.log("managerNameArray: " + JSON.stringify(managerNameArray));
+    inq.prompt({
+        name: "manchoice",
+        type: "rawlist",
+        message: "Which manager would you like to view?",
+        choices: managerNameArray
+    }).then(answer => {
+        for (var i = 0; i < managerArray.length; i++) {
+            if (answer.manchoice === managerNameArray[i]) {
+                var man_ID = managerArray[i].id;
+            }
+        }
+
+        query = connection.query("SELECT first_name, last_name FROM employee WHERE ?",
+            [
+                {
+                    manager_id: man_ID
+                }
+            ],
+            function (err, res) {
+                if (err) throw err;
+                console.log("");
+                console.log(answer.manchoice + " is manager of:");
+                console.table(res);
+                startPage();
+            });
+
+    })
+}
+
 // choose which type of entry to update
 
 function updateEntry() {
@@ -508,9 +544,9 @@ function updateEntry() {
             case "department":
                 updateDepartment();
                 break;
-                
-                case "return to start":
-                    startPage();
+
+            case "return to start":
+                startPage();
         }
 
     });
