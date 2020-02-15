@@ -32,10 +32,64 @@ var tempDeptArray = [];
 var managerArray = [];
 var managerNameArray = [];
 var managerID = 0;
+var empTable = [];
 
 
 
 function startPage() {
+
+    // fill arrays
+    var query = "SELECT id, title FROM role";
+    connection.query(query, function (err, res) {
+        tempRoleArray = [];
+        roleArray = [];
+        for (var i = 0; i < res.length; i++) {
+            tempRoleArray.push(res[i]);
+            // creates an array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
+        }
+
+        // converts to an array of strings
+
+        roleArray = tempRoleArray.map(role => role.title);
+        // console.log(roleArray);
+    });
+
+    query = "SELECT id, dept_name FROM department";
+    connection.query(query, function (err, res) {
+        tempDeptArray = [];
+        deptArray = [];
+        res.forEach(element => tempDeptArray.push(element));
+        // console.log(tempDeptArray);
+        deptArray = tempDeptArray.map(department => department.dept_name);
+        // console.log(deptArray);
+        // startPage();
+    });
+
+
+    query = connection.query(
+        "SELECT id, first_name, last_name FROM employee WHERE ?",
+        {
+            manager_id: 1
+        },
+        function (err, res) {
+            managerArray = [];
+            managerNameArray = [];
+            managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
+            res.forEach(element => managerArray.push(element));
+            // console.log("managerArray:" + JSON.stringify(managerArray));
+
+            for (i = 0; i < managerArray.length; i++) {
+                let name = managerArray[i].first_name + " " + managerArray[i].last_name;
+                // console.log(name);
+                managerNameArray.push(name);
+
+            }
+
+            // console.log("names: " + JSON.stringify(managerNameArray));
+        });
+
+
+
     // initiate question arrays
 
     inq.prompt({
@@ -44,7 +98,8 @@ function startPage() {
         message: "Welcome to the employee database CMS. What would you like to do?",
         choices: [
             "Add a new entry",
-            "View a current entry"
+            "View a current entry",
+            "Update an Entry"
         ]
     }).then(answer => {
         switch (answer.choice) {
@@ -54,6 +109,10 @@ function startPage() {
 
             case "View a current entry":
                 viewEntry();
+                break;
+
+            case "Update an Entry":
+                updateEntry();
                 break;
         }
 
@@ -81,20 +140,20 @@ function addEntry() {
         console.log("You chose: " + JSON.stringify(answer));
         switch (answer.addChoice) {
             case "employee":
-                var query = "SELECT id, title FROM role";
-                connection.query(query, function (err, res) {
-                    // var tempRoleArray = [];
-                    for (var i = 0; i < res.length; i++) {
-                        tempRoleArray.push(res[i]);
-                        // creates an array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
-                    }
+                // var query = "SELECT id, title FROM role";
+                // connection.query(query, function (err, res) {
+                //     // var tempRoleArray = [];
+                //     for (var i = 0; i < res.length; i++) {
+                //         tempRoleArray.push(res[i]);
+                //         // creates an array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
+                //     }
 
-                    // converts to an array of strings
+                //     // converts to an array of strings
 
-                    roleArray = tempRoleArray.map(role => role.title);
-                    console.log(roleArray);
-                    addEmployee();
-                });
+                //     roleArray = tempRoleArray.map(role => role.title);
+                //     console.log(roleArray);
+                addEmployee();
+                // });
 
                 // query = "SELECT id, dept_name FROM department";
                 // connection.query(query, function (err, res) {
@@ -117,16 +176,16 @@ function addEntry() {
                 //     }
                 // });
 
-                query = "SELECT id, dept_name FROM department";
-                connection.query(query, function (err, res) {
-                    // tempDeptArray = [];
-                    res.forEach(element => tempDeptArray.push(element));
-                    console.log(tempDeptArray);
-                    deptArray = tempDeptArray.map(department => department.dept_name);
-                    console.log(deptArray);
-                    // startPage();
-                    addRole();
-                });
+                // query = "SELECT id, dept_name FROM department";
+                // connection.query(query, function (err, res) {
+                //     // tempDeptArray = [];
+                //     res.forEach(element => tempDeptArray.push(element));
+                //     console.log(tempDeptArray);
+                //     deptArray = tempDeptArray.map(department => department.dept_name);
+                //     console.log(deptArray);
+                //     // startPage();
+                addRole();
+                // });
                 break;
             case "department":
                 addDepartment();
@@ -148,25 +207,25 @@ function addEntry() {
 function addEmployee() {
     // Fill manager array. All managers have as their manager Douglas Reynholm, Head Manager
 
-    managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
-    let query = connection.query(
-        "SELECT id, first_name, last_name FROM employee WHERE ?",
-        {
-            manager_id: 1
-        },
-        function (err, res) {
-            res.forEach(element => managerArray.push(element));
-            // console.log("managerArray:" + JSON.stringify(managerArray));
+    // managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
+    // let query = connection.query(
+    //     "SELECT id, first_name, last_name FROM employee WHERE ?",
+    //     {
+    //         manager_id: 1
+    //     },
+    //     function (err, res) {
+    //         res.forEach(element => managerArray.push(element));
+    //         // console.log("managerArray:" + JSON.stringify(managerArray));
 
-            for (i = 0; i < managerArray.length; i++) {
-                let name = managerArray[i].first_name + " " + managerArray[i].last_name;
-                // console.log(name);
-                managerNameArray.push(name);
+    //         for (i = 0; i < managerArray.length; i++) {
+    //             let name = managerArray[i].first_name + " " + managerArray[i].last_name;
+    //             // console.log(name);
+    //             managerNameArray.push(name);
 
-            }
+    //         }
 
-            // console.log("names: " + JSON.stringify(managerNameArray));
-        });
+    //         // console.log("names: " + JSON.stringify(managerNameArray));
+    //     });
 
     inq.prompt([
         {
@@ -184,7 +243,7 @@ function addEmployee() {
             type: "rawlist",
             name: "role_id",
             message: "In which role will the employee work?",
-            pageSize: roleArray.length, // otherwise the default is 6 for choices list
+            pageSize: roleArray.length + 1, // otherwise the default is 6 for choices list
             choices: roleArray
         },
         {
@@ -192,7 +251,7 @@ function addEmployee() {
             type: "rawlist",
             name: "managerID",
             message: "To whom will this employee report?",
-            pageSize: managerNameArray.length,
+            pageSize: managerNameArray.length + 1,
             choices: managerNameArray
         }]).then(answers => {
             tempRoleArray.forEach(element => {
@@ -253,7 +312,7 @@ function addRole() {
             type: "rawlist",
             name: "departmentID",
             message: "In which department will the role operate?",
-            pageSize: deptArray.length,
+            pageSize: deptArray.length + 1,
             choices: deptArray
         }]).then(answers => {
             console.log("tempDeptArray: " + JSON.stringify(tempDeptArray));
@@ -358,18 +417,6 @@ function viewEmployee() {
                     Department: d.dept_name
                 }
             });
-            // test initial table is created
-            // console.table(employeeTable);
-
-            // test we can get id from initial table
-            // for (var i = 0; i < employeeTable.length; i++) {
-            //     console.log(employeeTable[i].id);
-            // }
-
-            // test second table has different headlines
-            // console.table(tempEmployeeTable);
-
-            // try to change manager  column
 
             for (var j = 0; j < tempEmployeeTable.length; j++) {
                 let manID = tempEmployeeTable[j].Manager;
@@ -422,7 +469,7 @@ function viewRole() {
         },
 
     )
-// Adds the total number of people employed in a role into the Num_Employed column of the table 
+    // Adds the total number of people employed in a role into the Num_Employed column of the table 
     function numEmps() {
         let query = connection.query(
             "SELECT role_id FROM employee",
@@ -501,10 +548,473 @@ function viewDepartment() {
             }
 
         )
-        
+
     }
 }
-// connection.query(query, function (err, res) {
+
+
+function updateEntry() {
+
+    inq.prompt({
+        name: "choice",
+        type: "rawlist",
+        message: "Which type of entry would you like to update?",
+        choices: [
+            "employee",
+            "role",
+            "department"
+        ]
+    }).then(answer => {
+        switch (answer.choice) {
+            case "employee":
+                updateEmployee();
+                break;
+
+            case "role":
+                updateRole();
+                break;
+
+            case "department":
+                updateDepartment();
+        }
+
+    });
+}
+
+
+function updateEmployee() {
+
+    // prompt for employee's surname
+    inq.prompt({
+        name: "choice",
+        type: "rawlist",
+        message: "Would you like to update by ID or search by Surname?",
+        choices: [
+            "Update by ID",
+            "Search by Surname"
+        ]
+    }).then(answer => {
+        switch (answer.choice) {
+            case "Update by ID":
+                inq.prompt({
+                    name: "searchid",
+                    tupe: "number",
+                    message: "Please enter the ID to update:"
+                }).then(answers => {
+                    empTable = [];
+                    let query = connection.query(
+                        "SELECT * FROM employee WHERE ?",
+                        [{
+                            id: answers.searchid
+                        }],
+                        function (err, res) {
+                            if (err) throw err;
+                            if (!res) {
+                                console.log("ID is not in database.");
+                                updateEmployee();
+                            }
+                            else {
+                                res.forEach(element => empTable.push(element));
+                                updateEmpEntry(empTable);
+                            }
+                        }
+                    )
+                });
+                break;
+
+            case "Search by Surname":
+                searchEmp();
+                break;
+        }
+
+    });
+
+    function searchEmp() {
+        // search database for surname
+        empTable = [];
+        var surname = "";
+        var employeeTable = [];
+        var tempEmployeeTable = [];
+        inq.prompt({
+            name: "searchname",
+            tupe: "input",
+            message: "Please enter the Surname to search:"
+        }).then(answers => {
+            surname = answers.searchname;
+            let query = connection.query(
+                "SELECT * FROM employee WHERE ?",
+                [{
+                    last_name: surname
+                }],
+                function (err, res) {
+                    if (err) throw err;
+                    res.forEach(element => empTable.push(element));
+                    console.log("empTable created: " + JSON.stringify(empTable) + " length=" + empTable.length);
+                    // if surname does not appear, return to update employee
+                    if (empTable.length === 0) {
+                        console.log("Surname does not appear in database.");
+                        updateEmployee();
+                    }
+                    // if one entry returned, go to update entry
+                    else if (empTable.length === 1) {
+                        console.log("one result emptable: " + empTable);
+                        updateEmpEntry(empTable);
+                    }
+                    // if multiple entries returned, display them and prompt for ID of desired entry, then go to update entry
+                    else {
+                        let query = connection.query(
+                            "SELECT employee.id, first_name, last_name, manager_id, title, salary, dept_name FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON department.id = role.department_id WHERE ?",
+                            [{
+                                last_name: surname
+                            }],
+
+                            function (err, res) {
+                                if (err) throw err;
+                                // console.log(res);
+                                res.forEach(element => employeeTable.push(element));
+                                tempEmployeeTable = employeeTable.map(function (d) {
+                                    return {
+                                        ID: d.id,
+                                        FirstName: d.first_name,
+                                        Surname: d.last_name,
+                                        Manager: d.manager_id,
+                                        Title: d.title,
+                                        Salary: d.salary,
+                                        Department: d.dept_name
+                                    }
+                                });
+
+                                for (var j = 0; j < tempEmployeeTable.length; j++) {
+                                    let manID = tempEmployeeTable[j].Manager;
+                                    let maname = "";
+                                    if (tempEmployeeTable[j].Manager === null) {
+                                        tempEmployeeTable[j].Manager = "none";
+                                    }
+                                    else {
+                                        for (var k = 0; k < tempEmployeeTable.length; k++) {
+                                            // console.log("manID: " + manID + " -- tempEmployeeTable.ID: " + tempEmployeeTable[k].ID);
+                                            if (manID === tempEmployeeTable[k].ID) {
+
+                                                maname = tempEmployeeTable[k].FirstName + " " + tempEmployeeTable[k].Surname;
+                                                // console.log("maname: " + maname);
+
+                                            }
+                                        }
+                                        tempEmployeeTable[j].Manager = maname;
+                                    }
+                                }
+                                console.log("");
+                                console.table(tempEmployeeTable);
+
+
+
+                                inq.prompt({
+                                    name: "choice",
+                                    type: "number",
+                                    message: "Enter the ID of the entry to update:",
+                                }).then(answers => {
+                                    console.log("choice: " + answers.choice);
+                                    // loop backwards through array so entries don't get skipped after deletions.
+                                    for (i = empTable.length - 1; i >= 0; i--) {
+                                        if (answers.choice != empTable[i].id) {
+                                            empTable.splice(i, 1);
+
+                                        }
+
+                                    }
+                                    console.log("empTable after splicing: " + empTable);
+                                    updateEmpEntry(empTable);
+                                })
+                            }
+                        )
+                    }
+                }
+            )
+        });
+    }
+
+    function updateEmpEntry() {
+        // cannot update ID
+        // can update everything else
+
+
+        console.log("final emptable: " + JSON.stringify(empTable));
+
+        // managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
+        // let query = connection.query(
+        //     "SELECT id, first_name, last_name FROM employee WHERE ?",
+        //     {
+        //         manager_id: 1
+        //     },
+        //     function (err, res) {
+        //         res.forEach(element => managerArray.push(element));
+        //         // console.log("managerArray:" + JSON.stringify(managerArray));
+
+        //         for (i = 0; i < managerArray.length; i++) {
+        //             let name = managerArray[i].first_name + " " + managerArray[i].last_name;
+        //             // console.log(name);
+        //             managerNameArray.push(name);
+
+        //         }
+
+        //         // console.log("names: " + JSON.stringify(managerNameArray));
+        //     });
+
+        inq.prompt([
+            {
+                type: "input",
+                name: "first_name",
+                message: "Update the employee's first name:"
+                // validate: validateName
+            }, {
+                type: "input",
+                name: "last_name",
+                message: "Update the employee's surname:",
+                // validate: validateSalary
+            },
+            {
+                type: "rawlist",
+                name: "role_id",
+                message: "Update the employee's role:",
+                pageSize: roleArray.length + 1, // otherwise the default is 6 for choices list
+                choices: roleArray
+            },
+            {
+
+                type: "rawlist",
+                name: "managerID",
+                message: "Update the employee's manager:",
+                pageSize: managerNameArray.length + 1,
+                choices: managerNameArray
+            }]).then(answers => {
+                updateEmpTest(answers);
+            });
+
+        // .then(answers => {
+        //     // console.log("temprolearray: " +JSON.stringify(tempRoleArray));
+        //     // console.log("managernamearray: " + JSON.stringify(managerNameArray));
+        //     // console.log("managerArray: " + JSON.stringify(managerArray));
+        //     // console.log("emptable: " + JSON.stringify(empTable));
+        //     tempRoleArray.forEach(element => {
+        //         if (answers.role_id === element.title) {
+        //             roleID = element.id;
+
+        //             for (var i = 0; i < managerNameArray.length; i++) {
+        //                 if (answers.managerID === managerNameArray[i]) {
+        //                     managerID = managerArray[i].id;
+        //                 }
+        //             }
+
+        //             query = connection.query(
+        //                 "UPDATE employee SET ? WHERE ?",
+        //                 {
+        //                     first_name: answers.first_name,
+        //                     last_name: answers.last_name,
+        //                     role_id: roleID,
+        //                     manager_id: managerID
+        //                 },
+        //                 {
+        //                     id: empTable.id
+        //                 },
+        //                 function (err, res) {
+        //                     if (err) throw err;
+
+        //                     console.log(res.affectedRows + " employee record updated");
+        //                     startPage();
+        //                 }
+        //             )
+
+        //         }
+        //     })
+        // }).catch(function(err) {
+        //     console.log('error: ', err);
+        // });
+
+    }
+
+
+    function updateEmpTest(answers) {
+        console.log("empTable in updateEmpTest" + JSON.stringify(empTable));
+        console.log(answers.role_id);
+        tempRoleArray.forEach(element => {
+            if (answers.role_id === element.title) {
+                roleID = element.id;
+
+                for (var i = 0; i < managerNameArray.length; i++) {
+                    if (answers.managerID === managerNameArray[i]) {
+                        managerID = managerArray[i].id;
+                    }
+                }
+                console.log("answers: " + answers.first_name + " " + answers.last_name + " " + roleID + " " + managerID);
+
+
+                query = connection.query(
+                    "UPDATE employee SET ? WHERE ?",
+                    [{
+                        first_name: answers.first_name,
+                        last_name: answers.last_name,
+                        role_id: roleID,
+                        manager_id: managerID
+                    },
+                    {
+                        id: empTable[0].id
+                    }],
+                    function (err, res) {
+                        if (err) throw err;
+                        console.log(query.sql);
+                        console.log(res.affectedRows + " employee record updated");
+                        startPage();
+                    }
+                )
+
+
+            }
+        })
+    }
+}
+
+
+function updateRole() {
+    var roleToUpdate = [];
+    inq.prompt({
+        name: "choice",
+        type: "rawlist",
+        message: "Would you like to update by ID or search by Role name?",
+        choices: [
+            "Update by ID",
+            "Search by Role name"
+        ]
+    }).then(answer => {
+        switch (answer.choice) {
+            case "Update by ID":
+                inq.prompt({
+                    name: "searchid",
+                    tupe: "number",
+                    message: "Please enter the ID to update:"
+                }).then(answers => {
+                    let query = connection.query(
+                        "SELECT * FROM role WHERE ?",
+                        [{
+                            id: answers.searchid
+                        }],
+                        function (err, res) {
+                            if (err) throw err;
+                            if (!res) {
+                                console.log("ID is not in database.");
+                                updateRole();
+                            }
+                            else {
+                                res.forEach(element => roleToUpdate.push(element));
+                                updateRoleEntry();
+                            }
+                        }
+                    )
+                });
+                break;
+
+            case "Search by Role name":
+                searchRole();
+                break;
+        }
+
+    });
+
+    function searchRole() {
+        inq.prompt({
+            name: "searchrole",
+            type: "input",
+            message: "Please enter the Role name to search:"
+        }).then(answers => {
+            surname = answers.searchname;
+            query = connection.query(
+                "SELECT * FROM role WHERE ?",
+                [{
+                    title: answers.searchrole
+                }],
+                function (err, res) {
+                    if (err) throw err;
+                    if (!res) {
+                        console.log("Role not found.");
+                        updateRole();
+                    }
+                    else {
+                        res.forEach(element => roleToUpdate.push(element));
+                        updateRoleEntry();
+                    }
+
+
+                }
+            )
+        });
+
+    }
+    function updateRoleEntry() {
+
+        inq.prompt([
+            {
+                type: "input",
+                name: "title",
+                message: "Update the role's title:"
+                // validate: validateName
+            }, {
+                type: "number",
+                name: "salary",
+                message: "Update the role's salary:",
+                // validate: validateSalary
+            },
+            {
+                type: "rawlist",
+                name: "dept_id",
+                message: "Update the role's department:",
+                pageSize: deptArray.length + 1, // otherwise the default is 6 for choices list
+                choices: deptArray
+            }
+        ]).then(answers => {
+            console.log("roletoupdate: " + JSON.stringify(roleToUpdate));
+            updateRoleCall(answers);
+        });
+
+    }
+
+    function updateRoleCall(answers) {
+console.log("updateRoleCall starts");
+console.log("tempdeptarray " + JSON.stringify(tempDeptArray));
+
+        for (var i = 0; i < tempDeptArray.length; i++) {
+            console.log("for loop starts");
+            if (answers.dept_id === tempDeptArray[i].dept_name) {
+                console.log("if condition plays");
+                deptID = tempDeptArray[i].id;
+
+
+                console.log("deptID: " + deptID);
+
+
+                query = connection.query(
+                    "UPDATE role SET ? WHERE ?",
+                    [{
+                        title: answers.title,
+                        salary: answers.salary,
+                        department_id: deptID
+                    },
+                    {
+                        id: roleToUpdate[0].id
+                    }],
+                    function (err, res) {
+                        if (err) throw err;
+                        console.log(query.sql);
+                        console.log(res.affectedRows + " role record updated");
+                        startPage();
+                    }
+                )
+
+
+            }
+        }
+    }
+
+}
+// connection.query({query, function (err, res) {
 //     // tempDeptArray = [];
 //     res.forEach(element => tempDeptArray.push(element));
 //     // console.log(tempDeptArray);
