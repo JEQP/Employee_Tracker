@@ -27,8 +27,8 @@ connection.connect(function (err) {
 var roleArray = [];
 var tempRoleArray = [];
 var roleID = 0;
-var deptArray = [];
-var tempDeptArray = [];
+var deptArray = []; // ["Head Office","IT","Sales","Mayntenance"] 
+var tempDeptArray = []; // [{"id":1,"dept_name":"Head Office"},{"id":2,"dept_name":"IT"},{"id":3,"dept_name":"Sales"},{"id":4,"dept_name":"Mayntenance"}]
 var managerArray = [];
 var managerNameArray = [];
 var managerID = 0;
@@ -977,8 +977,8 @@ function updateRole() {
     }
 
     function updateRoleCall(answers) {
-console.log("updateRoleCall starts");
-console.log("tempdeptarray " + JSON.stringify(tempDeptArray));
+        console.log("updateRoleCall starts");
+        console.log("tempdeptarray " + JSON.stringify(tempDeptArray));
 
         for (var i = 0; i < tempDeptArray.length; i++) {
             console.log("for loop starts");
@@ -1014,27 +1014,55 @@ console.log("tempdeptarray " + JSON.stringify(tempDeptArray));
     }
 
 }
-// connection.query({query, function (err, res) {
-//     // tempDeptArray = [];
-//     res.forEach(element => tempDeptArray.push(element));
-//     // console.log(tempDeptArray);
-//     deptArray = tempDeptArray.map(department => department.dept_name);
-//     // console.log(deptArray);
-//     addEmployee();
 
-// });
-// // ==> print entry, inq update, delete, search for other
+function updateDepartment() {
 
-// // --==-- INQUIRER QUESTIONS FOR DATA ENTRY --==-- //
+    inq.prompt([
+        {
+            type: "rawlist",
+            name: "dept_id",
+            message: "Select Department to update:",
+            pageSize: deptArray.length + 1, // otherwise the default is 6 for choices list
+            choices: deptArray
+        }
+    ]).then(answers => {
+        var deptToUpdate = 0;
+        console.log("answers.dept_id " + answers.dept_id);
+        console.log("tempdeptArray" + JSON.stringify(tempDeptArray));
 
-// const departmentQuestions = [{
-//     type: "input",
-//     name: "dept_name",
-//     message: "What is the name of the department?",
-//     // validate: validateName
-// }]
+        for (var i = 0; i < tempDeptArray.length; i++) {
+            if (answers.dept_id == tempDeptArray[i].dept_name) {
+                console.log("tempDeptArray.id in if loop " + tempDeptArray[i].id);
+                deptToUpdate = tempDeptArray[i].id
+            }
+        }
+
+        inq.prompt([
+            {
+                type: "input",
+                name: "department",
+                message: "Input Department Name:"
+            }
+        ]).then(data => {
+            query = connection.query(
+                "UPDATE department SET ? WHERE ?",
+                [{
+                    dept_name: data.department
+                },
+                {
+                    id: deptToUpdate
+                }],
+                function (err, res) {
+                    if (err) throw err;
+                    console.log("depttoupdate " + deptToUpdate);
+                    console.log("Department " + data.department + " updated.");
+                    startPage();
+                }
+            )
+
+        });
 
 
-// function validateSalary(salary) {
-//     // find how to check max digits, and no more than two digits after decimal point.
-// }
+    });
+
+}
