@@ -21,24 +21,23 @@ connection.connect(function (err) {
     startPage();
 });
 
-// offer intial screen
-// inq add, view
 
-var roleArray = [];
-var tempRoleArray = [];
+var roleArray = [];     //Head Manager,IT Manager,Sales Manager,IT Technician,Sales Assistant
+var tempRoleArray = []; //[{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
 var roleID = 0;
-var deptArray = []; // ["Head Office","IT","Sales","Mayntenance"] 
+var deptArray = [];     // ["Head Office","IT","Sales","Mayntenance"] 
 var tempDeptArray = []; // [{"id":1,"dept_name":"Head Office"},{"id":2,"dept_name":"IT"},{"id":3,"dept_name":"Sales"},{"id":4,"dept_name":"Mayntenance"}]
-var managerArray = [];
-var managerNameArray = [];
+var managerArray = [];  // [{"id":1,"first_name":"Douglas","last_name":"Reynholm"},{"id":2,"first_name":"Jen","last_name":"Barber"},{"id":6,"first_name":"Alice","last_name":"Murphy"}]
+var managerNameArray = []; //["Douglas Reynholm","Jen Barber","Alice Murphy"]
 var managerID = 0;
 var empTable = [];
 
-
+// The initial page, to which user are returned once they finish their operation
 
 function startPage() {
 
-    // fill arrays
+    // fill arrays 
+
     var query = "SELECT id, title FROM role";
     connection.query(query, function (err, res) {
         tempRoleArray = [];
@@ -51,7 +50,6 @@ function startPage() {
         // converts to an array of strings
 
         roleArray = tempRoleArray.map(role => role.title);
-        // console.log(roleArray);
     });
 
     query = "SELECT id, dept_name FROM department";
@@ -59,10 +57,7 @@ function startPage() {
         tempDeptArray = [];
         deptArray = [];
         res.forEach(element => tempDeptArray.push(element));
-        // console.log(tempDeptArray);
         deptArray = tempDeptArray.map(department => department.dept_name);
-        // console.log(deptArray);
-        // startPage();
     });
 
 
@@ -76,16 +71,11 @@ function startPage() {
             managerNameArray = [];
             managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
             res.forEach(element => managerArray.push(element));
-            // console.log("managerArray:" + JSON.stringify(managerArray));
-
-            for (i = 0; i < managerArray.length; i++) {
+             for (i = 0; i < managerArray.length; i++) {
                 let name = managerArray[i].first_name + " " + managerArray[i].last_name;
-                // console.log(name);
                 managerNameArray.push(name);
-
             }
 
-            // console.log("names: " + JSON.stringify(managerNameArray));
         });
 
 
@@ -99,7 +89,8 @@ function startPage() {
         choices: [
             "Add a new entry",
             "View a current entry",
-            "Update an Entry"
+            "Update an Entry",
+            "Exit Program"
         ]
     }).then(answer => {
         switch (answer.choice) {
@@ -114,6 +105,9 @@ function startPage() {
             case "Update an Entry":
                 updateEntry();
                 break;
+
+            case "Exit Program":
+                return process.exit(17);
         }
 
     });
@@ -122,8 +116,7 @@ function startPage() {
 
 
 
-// add entry
-// inq employee, role, department
+// This function is to choose which entry to add to the database
 
 function addEntry() {
     inq.prompt({
@@ -133,100 +126,37 @@ function addEntry() {
         choices: [
             "employee",
             "role",
-            "department"
+            "department",
+            "return to start"
         ]
         // switch cases to draw in questions, then answers are pushed to DB rather than array. INSERT command.
     }).then(answer => {
         console.log("You chose: " + JSON.stringify(answer));
         switch (answer.addChoice) {
             case "employee":
-                // var query = "SELECT id, title FROM role";
-                // connection.query(query, function (err, res) {
-                //     // var tempRoleArray = [];
-                //     for (var i = 0; i < res.length; i++) {
-                //         tempRoleArray.push(res[i]);
-                //         // creates an array: [{"title":"Head Manager"},{"title":"IT Manager"},{"title":"Sales Manager"},{"title":"IT Technician"},{"title":"Sales Assistant"}]
-                //     }
-
-                //     // converts to an array of strings
-
-                //     roleArray = tempRoleArray.map(role => role.title);
-                //     console.log(roleArray);
                 addEmployee();
-                // });
-
-                // query = "SELECT id, dept_name FROM department";
-                // connection.query(query, function (err, res) {
-                //     // tempDeptArray = [];
-                //     res.forEach(element => tempDeptArray.push(element));
-                //     // console.log(tempDeptArray);
-                //     deptArray = tempDeptArray.map(department => department.dept_name);
-                //     // console.log(deptArray);
-
-
-                // });
                 break;
+
             case "role":
-                // console.log("query to start");
-                // var query = "SELECT id, dept_name FROM department";
-                // console.log("Query conducted");
-                // connection.query(query, function (err, res) {
-                //     for (var i = 0; i < res.length; i++) {
-                //         console.log(res[i].id + " -- " + res[i].dept_name);
-                //     }
-                // });
-
-                // query = "SELECT id, dept_name FROM department";
-                // connection.query(query, function (err, res) {
-                //     // tempDeptArray = [];
-                //     res.forEach(element => tempDeptArray.push(element));
-                //     console.log(tempDeptArray);
-                //     deptArray = tempDeptArray.map(department => department.dept_name);
-                //     console.log(deptArray);
-                //     // startPage();
                 addRole();
-                // });
                 break;
+
             case "department":
                 addDepartment();
+                break;
+
+            case "return to start":
+                startPage();
 
         }
     });
-
-
-    //             case "department":
-    // departmentQuestions;
-    // break;
 }
 
 
-
-// // ==> employee, inq first name, surname, role id, manager id
+// Add an employee to the database
 
 
 function addEmployee() {
-    // Fill manager array. All managers have as their manager Douglas Reynholm, Head Manager
-
-    // managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
-    // let query = connection.query(
-    //     "SELECT id, first_name, last_name FROM employee WHERE ?",
-    //     {
-    //         manager_id: 1
-    //     },
-    //     function (err, res) {
-    //         res.forEach(element => managerArray.push(element));
-    //         // console.log("managerArray:" + JSON.stringify(managerArray));
-
-    //         for (i = 0; i < managerArray.length; i++) {
-    //             let name = managerArray[i].first_name + " " + managerArray[i].last_name;
-    //             // console.log(name);
-    //             managerNameArray.push(name);
-
-    //         }
-
-    //         // console.log("names: " + JSON.stringify(managerNameArray));
-    //     });
-
     inq.prompt([
         {
             type: "input",
@@ -263,16 +193,6 @@ function addEmployee() {
                             managerID = managerArray[i].id;
                         }
                     }
-                    // managerNameArray.forEach(element => {
-                    //     // console.log("element: " + element);
-                    //     if (answers.managerID === element) {
-                    //         var index = managerNameArray.indexOf(element);
-                    //         managerID = managerArray[index].id;
-
-                    //     }
-                    // if (answers.departmentID === element.dept_name) {  it's manager, we need to work out the code for finding manager ID
-                    //     const deptID = element.id;
-                    //     console.log("deptID: " + deptID);
                     let query = connection.query(
                         "INSERT INTO employee SET ?",
                         {
@@ -292,7 +212,8 @@ function addEmployee() {
             })
         })
 }
-// // ==> role, inq title, salary, department
+
+// Add role to the database
 
 function addRole() {
     console.log("deptArray in addRole: " + deptArray);
@@ -340,7 +261,7 @@ function addRole() {
         });
 }
 
-// // ==> department, inq dept name
+// Add department to the database
 
 function addDepartment() {
     inq.prompt([{
@@ -364,8 +285,7 @@ function addDepartment() {
     })
 }
 
-// // view entry
-// // inq employee, role, department
+// choose which type of entry to view
 
 function viewEntry() {
 
@@ -376,7 +296,8 @@ function viewEntry() {
         choices: [
             "employee",
             "role",
-            "department"
+            "department",
+            "return to start"
         ]
     }).then(answer => {
         switch (answer.choice) {
@@ -390,11 +311,16 @@ function viewEntry() {
 
             case "department":
                 viewDepartment();
+                break;
+
+                case "return to start":
+                    startPage();
         }
 
     });
 }
 
+// choose employee file to view
 
 function viewEmployee() {
     var employeeTable = [];
@@ -426,17 +352,16 @@ function viewEmployee() {
                 }
                 else {
                     for (var k = 0; k < tempEmployeeTable.length; k++) {
-                        // console.log("manID: " + manID + " -- tempEmployeeTable.ID: " + tempEmployeeTable[k].ID);
                         if (manID === tempEmployeeTable[k].ID) {
 
                             maname = tempEmployeeTable[k].FirstName + " " + tempEmployeeTable[k].Surname;
-                            // console.log("maname: " + maname);
 
                         }
                     }
                     tempEmployeeTable[j].Manager = maname;
                 }
             }
+            console.log("----------------------------------------------------------------------------------");
             console.table(tempEmployeeTable);
             startPage();
 
@@ -445,7 +370,8 @@ function viewEmployee() {
 
 }
 
-// Displays a table of role information 
+// choose which role to view
+
 function viewRole() {
     var roleTable = [];
     var tempRoleTable = [];
@@ -488,6 +414,7 @@ function viewRole() {
 
                     }
                 }
+                console.log("----------------------------------------------------------------------------------");
                 console.table(tempRoleTable);
                 startPage();
             }
@@ -499,6 +426,7 @@ function viewRole() {
 
 }
 
+// view all departments, with number of people employed in each department
 
 function viewDepartment() {
     var deptTable = [];
@@ -543,6 +471,7 @@ function viewDepartment() {
 
                     }
                 }
+                console.log("----------------------------------------------------------------------------------");
                 console.table(tempDeptTable);
                 startPage();
             }
@@ -552,6 +481,7 @@ function viewDepartment() {
     }
 }
 
+// choose which type of entry to update
 
 function updateEntry() {
 
@@ -562,7 +492,8 @@ function updateEntry() {
         choices: [
             "employee",
             "role",
-            "department"
+            "department",
+            "return to start"
         ]
     }).then(answer => {
         switch (answer.choice) {
@@ -576,11 +507,16 @@ function updateEntry() {
 
             case "department":
                 updateDepartment();
+                break;
+                
+                case "return to start":
+                    startPage();
         }
 
     });
 }
 
+// choose and update an employee file
 
 function updateEmployee() {
 
@@ -649,7 +585,6 @@ function updateEmployee() {
                 function (err, res) {
                     if (err) throw err;
                     res.forEach(element => empTable.push(element));
-                    console.log("empTable created: " + JSON.stringify(empTable) + " length=" + empTable.length);
                     // if surname does not appear, return to update employee
                     if (empTable.length === 0) {
                         console.log("Surname does not appear in database.");
@@ -657,7 +592,6 @@ function updateEmployee() {
                     }
                     // if one entry returned, go to update entry
                     else if (empTable.length === 1) {
-                        console.log("one result emptable: " + empTable);
                         updateEmpEntry(empTable);
                     }
                     // if multiple entries returned, display them and prompt for ID of desired entry, then go to update entry
@@ -670,7 +604,6 @@ function updateEmployee() {
 
                             function (err, res) {
                                 if (err) throw err;
-                                // console.log(res);
                                 res.forEach(element => employeeTable.push(element));
                                 tempEmployeeTable = employeeTable.map(function (d) {
                                     return {
@@ -692,28 +625,21 @@ function updateEmployee() {
                                     }
                                     else {
                                         for (var k = 0; k < tempEmployeeTable.length; k++) {
-                                            // console.log("manID: " + manID + " -- tempEmployeeTable.ID: " + tempEmployeeTable[k].ID);
                                             if (manID === tempEmployeeTable[k].ID) {
 
                                                 maname = tempEmployeeTable[k].FirstName + " " + tempEmployeeTable[k].Surname;
-                                                // console.log("maname: " + maname);
 
                                             }
                                         }
                                         tempEmployeeTable[j].Manager = maname;
                                     }
                                 }
-                                console.log("");
-                                console.table(tempEmployeeTable);
-
-
 
                                 inq.prompt({
                                     name: "choice",
                                     type: "number",
                                     message: "Enter the ID of the entry to update:",
                                 }).then(answers => {
-                                    console.log("choice: " + answers.choice);
                                     // loop backwards through array so entries don't get skipped after deletions.
                                     for (i = empTable.length - 1; i >= 0; i--) {
                                         if (answers.choice != empTable[i].id) {
@@ -722,7 +648,6 @@ function updateEmployee() {
                                         }
 
                                     }
-                                    console.log("empTable after splicing: " + empTable);
                                     updateEmpEntry(empTable);
                                 })
                             }
@@ -734,31 +659,6 @@ function updateEmployee() {
     }
 
     function updateEmpEntry() {
-        // cannot update ID
-        // can update everything else
-
-
-        console.log("final emptable: " + JSON.stringify(empTable));
-
-        // managerArray.push({ "id": 1, "first_name": "Douglas", "last_name": "Reynholm" });
-        // let query = connection.query(
-        //     "SELECT id, first_name, last_name FROM employee WHERE ?",
-        //     {
-        //         manager_id: 1
-        //     },
-        //     function (err, res) {
-        //         res.forEach(element => managerArray.push(element));
-        //         // console.log("managerArray:" + JSON.stringify(managerArray));
-
-        //         for (i = 0; i < managerArray.length; i++) {
-        //             let name = managerArray[i].first_name + " " + managerArray[i].last_name;
-        //             // console.log(name);
-        //             managerNameArray.push(name);
-
-        //         }
-
-        //         // console.log("names: " + JSON.stringify(managerNameArray));
-        //     });
 
         inq.prompt([
             {
@@ -787,55 +687,12 @@ function updateEmployee() {
                 pageSize: managerNameArray.length + 1,
                 choices: managerNameArray
             }]).then(answers => {
-                updateEmpTest(answers);
+                updateEmpCall(answers);
             });
-
-        // .then(answers => {
-        //     // console.log("temprolearray: " +JSON.stringify(tempRoleArray));
-        //     // console.log("managernamearray: " + JSON.stringify(managerNameArray));
-        //     // console.log("managerArray: " + JSON.stringify(managerArray));
-        //     // console.log("emptable: " + JSON.stringify(empTable));
-        //     tempRoleArray.forEach(element => {
-        //         if (answers.role_id === element.title) {
-        //             roleID = element.id;
-
-        //             for (var i = 0; i < managerNameArray.length; i++) {
-        //                 if (answers.managerID === managerNameArray[i]) {
-        //                     managerID = managerArray[i].id;
-        //                 }
-        //             }
-
-        //             query = connection.query(
-        //                 "UPDATE employee SET ? WHERE ?",
-        //                 {
-        //                     first_name: answers.first_name,
-        //                     last_name: answers.last_name,
-        //                     role_id: roleID,
-        //                     manager_id: managerID
-        //                 },
-        //                 {
-        //                     id: empTable.id
-        //                 },
-        //                 function (err, res) {
-        //                     if (err) throw err;
-
-        //                     console.log(res.affectedRows + " employee record updated");
-        //                     startPage();
-        //                 }
-        //             )
-
-        //         }
-        //     })
-        // }).catch(function(err) {
-        //     console.log('error: ', err);
-        // });
-
     }
 
 
-    function updateEmpTest(answers) {
-        console.log("empTable in updateEmpTest" + JSON.stringify(empTable));
-        console.log(answers.role_id);
+    function updateEmpCall(answers) {
         tempRoleArray.forEach(element => {
             if (answers.role_id === element.title) {
                 roleID = element.id;
@@ -845,8 +702,6 @@ function updateEmployee() {
                         managerID = managerArray[i].id;
                     }
                 }
-                console.log("answers: " + answers.first_name + " " + answers.last_name + " " + roleID + " " + managerID);
-
 
                 query = connection.query(
                     "UPDATE employee SET ? WHERE ?",
@@ -873,6 +728,7 @@ function updateEmployee() {
     }
 }
 
+// select and update a role
 
 function updateRole() {
     var roleToUpdate = [];
@@ -1002,7 +858,6 @@ function updateRole() {
                     }],
                     function (err, res) {
                         if (err) throw err;
-                        console.log(query.sql);
                         console.log(res.affectedRows + " role record updated");
                         startPage();
                     }
@@ -1014,6 +869,8 @@ function updateRole() {
     }
 
 }
+
+// select and update a department
 
 function updateDepartment() {
 
@@ -1027,12 +884,9 @@ function updateDepartment() {
         }
     ]).then(answers => {
         var deptToUpdate = 0;
-        console.log("answers.dept_id " + answers.dept_id);
-        console.log("tempdeptArray" + JSON.stringify(tempDeptArray));
 
         for (var i = 0; i < tempDeptArray.length; i++) {
             if (answers.dept_id == tempDeptArray[i].dept_name) {
-                console.log("tempDeptArray.id in if loop " + tempDeptArray[i].id);
                 deptToUpdate = tempDeptArray[i].id
             }
         }
@@ -1054,7 +908,6 @@ function updateDepartment() {
                 }],
                 function (err, res) {
                     if (err) throw err;
-                    console.log("depttoupdate " + deptToUpdate);
                     console.log("Department " + data.department + " updated.");
                     startPage();
                 }
