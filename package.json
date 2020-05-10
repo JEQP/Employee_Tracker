@@ -4,7 +4,8 @@
   "description": "Employee CMS",
   "main": "employeetrackercode.js",
   "scripts": {
-    "test": "NULL"
+    "test": "NULL",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
