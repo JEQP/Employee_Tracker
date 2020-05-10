@@ -12,3 +12,7 @@ The program uses Javascript and mysql.
 
 
 ![Employee Tracker CLI](https://raw.githubusercontent.com/JEQP/Employee_Tracker/master/employeetrackerdemo.jpg)
+
+## Installation
+
+To install clone the project into the desired directory. Avoid the seed file if you want to start with an empty directory, or else edit the seed file to suit your organisation's structure. 
