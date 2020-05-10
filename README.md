@@ -22,4 +22,5 @@ In the index.js file under mysql create connection adjust the values for "port",
 Start your mysql server, and enter the following command line, changing username and yourpassword for your personal ones, and ensuring the schema.sql pathname is complete. 
 mysql --user="username" --database="employeetracker" --password="yourpassword" < "schema.sql"
 
+To start the program in CLI cd to the folder with the project and use the commands "node index.js" or "npm start".
 
