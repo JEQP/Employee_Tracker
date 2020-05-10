@@ -15,4 +15,11 @@ The program uses Javascript and mysql.
 
 ## Installation
 
-To install clone the project into the desired directory. Avoid the seed file if you want to start with an empty directory, or else edit the seed file to suit your organisation's structure. 
+To install clone the project into the desired directory. Avoid the seed file if you want to start with an empty directory. The schema sets up the database.  
+
+In the index.js file under mysql create connection adjust the values for "port", "user" and "password" to your local values, which you use to log into MySQL in the command line interface. 
+
+Start your mysql server, and enter the following command line, changing username and yourpassword for your personal ones, and ensuring the schema.sql pathname is complete. 
+mysql --user="username" --database="employeetracker" --password="yourpassword" < "schema.sql"
+
+
